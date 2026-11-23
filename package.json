@@ -1,0 +1,1 @@
+{"main":"app.js","name":"nodaroo-node","private":true,"scripts":{"start":"node app.js"},"version":"1.0.0"}
