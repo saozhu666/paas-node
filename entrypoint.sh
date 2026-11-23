@@ -7,8 +7,18 @@ set -e
 WS_PATH="${WS_PATH:-/ws}"
 PORT="${PORT:-8080}"
 
-mkdir -p /etc/sing-box
-cat > /etc/sing-box/config.json <<EOF
+# Some runtimes mount the root filesystem read-only (the old version wrote
+# to /etc/sing-box and crash-looped there). Pick the first writable dir.
+CFG_DIR=""
+for d in "${TMPDIR:-/tmp}" "${HOME:-/nonexistent}" "."; do
+  if mkdir -p "$d/sing-box" 2>/dev/null; then
+    CFG_DIR="$d/sing-box"
+    break
+  fi
+done
+: "${CFG_DIR:?no writable directory found for config}"
+
+cat > "$CFG_DIR/config.json" <<EOF
 {
   "log": { "level": "warn" },
   "inbounds": [
@@ -25,4 +35,4 @@ cat > /etc/sing-box/config.json <<EOF
 }
 EOF
 
-exec sing-box run -c /etc/sing-box/config.json
+exec sing-box run -c "$CFG_DIR/config.json"
